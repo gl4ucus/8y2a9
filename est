@@ -1,0 +1,32 @@
+import pandas as pd
+
+df = pd.DataFrame(list(zip([1,2,3,4,5], [None, 1, 2, 3, None])), columns = ["X", "Y"])
+
+df = df.merge(df, left_on = "Y", right_on = "X", how = "right").drop(columns = ["Y_x"])
+df = df.merge(df[["X_y", "Y_y"]], left_on = "Y_y", right_on = "X_y", how = "left").drop(columns = ["X_y_y"])
+
+df_remove = df[df["Y_y_x"].isnull() & df["Y_y_y"].isnull() & df["X_x"].notnull()]
+df = df.drop(df_remove.index)
+
+df.columns = ["A", "B", "C", "D"]
+
+while not df["A"].dropna().empty:
+    df = df.merge(df[["A", "D"]], left_on = "B", right_on = "A", how = "left")
+    df.drop(columns = ["A_y", "D_x"], inplace = True)
+
+    df.columns = ["A", "B", "C", "D"]
+
+    df_remove = df[df["D"].isnull() & df["A"].notnull()]
+    df = df.drop(df_remove.index)
+
+# Separate processing
+df_1 = df[df["D"].isnull()].copy()
+df_2 = df[~df["D"].isnull()].copy()
+df_2["C"] = df_2["D"]
+
+
+df = pd.concat([df_1, df_2], ignore_index = True)
+df.drop(columns = ["A", "D"], inplace = True)
+print(df)
+
+
